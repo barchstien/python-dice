@@ -24,7 +24,8 @@ cnt = 0
 global n_ples
 n_ples = []
 
-# TODO if all 1 ----------> failure !
+DICE_T = 10
+
 
 def simple():
     """First proto, 2 dice only, DEPRECATED"""
@@ -47,7 +48,7 @@ def recursive_fill(n_array_coord, depth, ttable, num_of_dice, magie_noire):
     global success
     global cnt
 
-    for i in range(10):
+    for i in range(DICE_T):
         if depth <= 1:
             # reached the leaf, fill the sum
             leaf = sum(n_array_coord)
@@ -57,15 +58,15 @@ def recursive_fill(n_array_coord, depth, ttable, num_of_dice, magie_noire):
             ttable.append(leaf)
             # total
             cnt += 1
-            # success
-            if leaf >= at_least:
+            # bigger than target and not 1 to all dice
+            if leaf >= at_least and leaf != num_of_dice:
                 success += 1
             # doubles, triples, etc
             # debug only do doubles ------------------- TODO
             for n in range(2, num_of_dice + 1):
                 pass
                 #occurences = 0
-                # for all possibles values with d10
+                # for all possibles values with d{DICE_T}
                 for v in range(1, 11):
                     occurences = 0
                     # check current dices values
@@ -74,7 +75,7 @@ def recursive_fill(n_array_coord, depth, ttable, num_of_dice, magie_noire):
                         if v == d:
                             occurences += 1
                             #print("++++")
-                    if occurences == n:
+                    if occurences >= n:
                         n_ples[n-2] += 1
                 #print('-------- n:{} occurences:{} n_ples:{}'.format(n, occurences, n_ples))
         else:
@@ -85,29 +86,17 @@ def recursive_fill(n_array_coord, depth, ttable, num_of_dice, magie_noire):
     n_array_coord[-1*depth] = 1
 
 def n_array(num_of_dice, magie_noire):
-    print('Chance to get at least {} with {}d10'.format(at_least, num_of_dice))
-    if magie_noire:
-        print('_-={magie noire}=-_ throw extra 1d10, replaces a lower d10 result')
-        # add a dice to total, but that is removed later
-        num_of_dice += 1
     # truth table n-dimension(s), n = number of dice
     # contains the sum of dice (+/- magie noire if enabled)
     ttable = []
     # current truth table coordinate, n-dimension(s)
-    # coordinates are also the values of dice thrown, ie in [1;10]
+    # coordinates are also the values of dice thrown, ie in [1;DICE_T]
     n_array_coord = []
     
     # set coord at origin N * {1}
     for i in range(num_of_dice):
         n_array_coord.append(1)
     recursive_fill(n_array_coord, num_of_dice, ttable, num_of_dice, magie_noire)
-    
-    print('  chances {}'.format(success/cnt))
-    #print('success {} cnt  {}'.format(success, cnt))
-    #print('n_ples {}'.format(n_ples))
-    print('doubles, triples, n-ples....')
-    for i in range (2, num_of_dice + 1):
-        print('  {}-ples {}'.format(i, n_ples[i-2]/cnt))
 
 if __name__ == '__main__':
     if len(sys.argv) < 3 :
@@ -125,9 +114,27 @@ if __name__ == '__main__':
     if len(sys.argv) > 3 :
         magie_noire = sys.argv[3] in ['true', True, '1', 'mn', 'magie-noire']
 
+    print('Chance to get at least {} with {}d{}'.format(at_least, num_of_dice, DICE_T))
+
+    if magie_noire:
+        print('-\_-={{magie noire}}=-_/-')
+        print('  throw extra d{0}, replaces a lower d{0} result\n'.format(DICE_T))
+        # add a dice to total, but that is removed later
+        num_of_dice += 1
+
+    # set to 0 chances to get double, triple, etc
     for i in range(2, num_of_dice + 1):
         n_ples.append(0)
     
     #simple()
     n_array(num_of_dice, magie_noire)
+
+    print('---> {}\n'.format(success/cnt))
+    #print('success {} cnt  {}'.format(success, cnt))
+
+    #print('n_ples {}'.format(n_ples))
+    print('Malédiction de Tzeench')
+    print('doubles, triples, n-ples....')
+    for i in range (2, num_of_dice + 1):
+        print('  {}-ples {}'.format(i, n_ples[i-2]/cnt))
 
