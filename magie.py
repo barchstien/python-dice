@@ -45,7 +45,7 @@ class Warhammer_spell_probability:
                             if v == d:
                                 occurences += 1
                                 #print("++++")
-                        if occurences >= n:
+                        if occurences == n:
                             self.n_ples[n-2] += 1
             else:
                 ttable.append([])
